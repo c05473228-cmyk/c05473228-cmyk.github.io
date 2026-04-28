@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Series • CineApp</title>
+
+<style>
+body{
+    margin:0;
+    background:#0b0b0f;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+/* ==== BUSCADOR ==== */
+#searchBar{
+    width:90%;
+    margin:15px auto;
+    display:block;
+    padding:12px 15px;
+    border-radius:10px;
+    font-size:16px;
+    border:none;
+    outline:none;
+    background:#111;
+    color:white;
+}
+
+/* ====== GRID SERIES ====== */
+.series-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:15px;
+    padding:20px;
+}
+
+.series-card{
+    background:#111;
+    border-radius:10px;
+    padding:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+.series-card:hover{
+    transform:scale(1.05);
+}
+.series-card img{
+    width:100%;
+    border-radius:10px;
+}
+.series-title{
+    text-align:center;
+    margin-top:8px;
+    font-size:15px;
+}
+
+/* ====== PANEL INFO ====== */
+#seriesInfo{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#000c;
+    backdrop-filter:blur(4px);
+    display:none;
+    z-index:9999;
+    padding:20px;
+    overflow-y:auto;
+}
+
+.info-box{
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+}
+
+.closeInfo{
+    float:right;
+    background:red;
+    padding:10px 13px;
+    border-radius:50%;
+    font-size:18px;
+    border:none;
+    cursor:pointer;
+}
+
+/* ====== REPRODUCTOR ====== */
+#playerOverlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    background:rgba(0,0,0,0.85);
+    display:none;
+    z-index:999999;
+    align-items:center;
+    justify-content:center;
+}
+
+#playerBox{
+    width:90%;
+    max-width:900px;
+    background:#111;
+    border-radius:10px;
+    padding:10px;
+    position:relative;
+}
+
+#playerFrame{
+    width:100%;
+    height:55vh;
+    border:none;
+    border-radius:10px;
+}
+
+#closePlayer{
+    position:absolute;
+    top:-15px;
+    right:-15px;
+    background:red;
+    border:none;
+    color:#fff;
+    padding:10px 13px;
+    border-radius:50%;
+    font-size:20px;
+    cursor:pointer;
+}
+
+
+
+.season-title{
+    background:#111;
+    color:gold;
+    padding:12px;
+    border:1px solid gold;
+    border-radius:8px;
+    margin:15px 0;
+}
+
+.episode-btn{
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    background:#1a1a1a;
+    color:white;
+    border:none;
+    border-radius:8px;
+}
+.episode-btn:hover{
+    background:gold;
+    color:#000;
+}
+    
+</style>
+</head>
+<body>
+
+<h2 style="padding:20px;"> Catálogo de Series</h2>
+
+<!-- ========== BUSCADOR ========== -->
+<input type="text" id="searchBar" placeholder="Buscar series..." onkeyup="searchSeries()">
+
+<!-- ===================== GRID ===================== -->
+<div class="series-grid" id="seriesGrid"></div>
+
+<!-- ===================== PANEL DE INFO ===================== -->
+<div id="seriesInfo">
+    <div class="info-box" id="infoContent"></div>
+</div>
+
+<!-- ===================== REPRODUCTOR ===================== -->
+<div id="playerOverlay">
+    <div id="playerBox">
+        <button id="closePlayer">✖</button>
+        <iframe id="playerFrame" allowfullscreen></iframe>
+    </div>
+</div>
+
+<script>
+/* ===================== BASE DE SERIES ===================== */
+const seriesData = [
+
+
+    {
+    title:"The boys",
+    poster:"https://e01-elmundo.uecdn.es/assets/multimedia/imagenes/2026/03/05/17727382688402.png",
+    description:"Cuando los superhéroes abusan de sus superpoderes en lugar de usarlos para el bien, unos \"muchachos\" se embarcan en una búsqueda heroica para exponer sus secretos.",
+    seasons:[
+        {
+            name:"Temporada 1",
+            episodes:[
+                {title:"Episodio 1", url:"https://vimeos.net/embed-ohivhkfb418n.html"},
+                {title:"Episodio 2", url:"https://vimeos.net/embed-96kffo254lbv.html"},
+                {title:"Episodio 3", url:"https://vimeos.net/embed-29gqcrmi17aq.html"},
+                {title:"Episodio 4", url:"https://vimeos.net/embed-txcdoetm6bow.html"},
+                {title:"Episodio 5", url:"https://vimeos.net/embed-ndwp5yzw0xyj.html"},
+                {title:"Episodio 6", url:"https://vimeos.net/embed-lqi3gaoayf7r.html"},
+                {title:"Episodio 7", url:"https://vimeos.net/embed-zia5c18hh9yj.html"},
+                {title:"Episodio 8", url:"https://vimeos.net/embed-tpz040tt2pnz.html"}
+            ]
+        },
+
+        {
+            name:"Temporada 2",
+            episodes:[
+                {title:"Episodio 1", url:"https://vimeos.net/embed-lq6rgrpmuicz.html"},
+                {title:"Episodio 2", url:"https://vimeos.net/embed-mn4ihujv8164.html"},
+                {title:"Episodio 3", url:"https://vimeos.net/embed-yjmafvob4y5s.html"},
+                {title:"Episodio 4", url:"https://vimeos.net/embed-uozkvf7awpgp.html"},
+                {title:"Episodio 5", url:"https://vimeos.net/embed-zibcko4ye6r6.html"},
+                {title:"Episodio 6", url:"https://vimeos.net/embed-qy5klkadte5v.html"},
+                {title:"Episodio 7", url:"https://vimeos.net/embed-qy5klkadte5v.html"},
+                {title:"Episodio 8", url:"https://vimeos.net/embed-v1qpbbvzzbdr.html"},
+                
+            ]
+        },
+        
+        {
+            name:"Temporada 3",
+            episodes:[
+                {title:"Episodio 1", url:"#"},
+                {title:"Episodio 2", url:"#"},
+                {title:"Episodio 3", url:"#"},
+                {title:"Episodio 4", url:"#"},
+                {title:"Episodio 5", url:"#"},
+                {title:"Episodio 6", url:"#"},
+                {title:"Episodio 7", url:"#"}
+            ]
+        }
+    ]
+    },
+
+    
+
+    
+    {
+        title:"#",
+        poster:"#",
+        description:"#",
+        seasons:[
+            {
+                name:"Temporada 1",
+                episodes:[
+                    {title:"Episodio 1", url:"#"},
+                    {title:"Episodio 2", url:"#"}
+                ]
+            }
+        ]
+    },
+
+    
+    {
+        title:"Breaking Bad",
+        poster:"https://i.imgur.com/NPn4yqN.jpeg",
+        description:"Un profesor de química se convierte en fabricante de metanfetamina.",
+        seasons:[
+            {
+                name:"Temporada 1",
+                episodes:[
+                    {title:"Episodio 1", url:"https://example.com/bb1e1"},
+                    {title:"Episodio 2", url:"https://example.com/bb1e2"}
+                ]
+            }
+        ]
+    },
+
+
+    {
+        title:"#",
+        poster:"#",
+        description:"#",
+        seasons:[
+            {
+                name:"Temporada 1",
+                episodes:[
+                    {title:"Episodio 1", url:"#"},
+                    {title:"Episodio 2", url:"#"}
+                ]
+            }
+        ]
+    },
+
+    
+    {
+        title:"The Walking Dead",
+        poster:"https://i.imgur.com/Zq2qQ2v.jpeg",
+        description:"Un grupo de sobrevivientes enfrenta un apocalipsis zombie.",
+        seasons:[
+            {
+                name:"Temporada 1",
+                episodes:[
+                    {title:"Episodio 1", url:"https://example.com/twd1e1"},
+                    {title:"Episodio 2", url:"https://example.com/twd1e2"}
+                ]
+            }
+        ]
+    },
+    {
+        title:"Game of Thrones",
+        poster:"https://i.imgur.com/OD4Z0hr.jpeg",
+        description:"Reinos luchan por el trono de hierro.",
+        seasons:[
+            {
+                name:"Temporada 1",
+                episodes:[
+                    {title:"Episodio 1", url:"https://example.com/got1e1"},
+                    {title:"Episodio 2", url:"https://example.com/got1e2"}
+                ]
+            }
+        ]
+    },
+    {
+        title:"Stranger Things",
+        poster:"https://i.imgur.com/Y3eN8JV.jpeg",
+        description:"Un niño desaparece y se descubre un mundo paralelo.",
+        seasons:[
+            {
+                name:"Temporada 1",
+                episodes:[
+                    {title:"Episodio 1", url:"https://example.com/st1e1"},
+                    {title:"Episodio 2", url:"https://example.com/st1e2"}
+                ]
+            }
+        ]
+    },
+    {
+        title:"Peaky Blinders",
+        poster:"https://i.imgur.com/n4XZdkp.jpeg",
+        description:"Una familia de gánsteres domina Birmingham.",
+        seasons:[
+            {
+                name:"Temporada 1",
+                episodes:[
+                    {title:"Episodio 1", url:"https://example.com/pb1e1"},
+                    {title:"Episodio 2", url:"https://example.com/pb1e2"}
+                ]
+            }
+        ]
+    }
+];
+
+/* ===================== GENERAR GRID ===================== */
+const grid = document.getElementById("seriesGrid");
+
+function loadGrid(list){
+    grid.innerHTML = "";
+    list.forEach((serie, index) => {
+        grid.innerHTML += `
+            <div class="series-card" onclick="openSeries(${seriesData.indexOf(serie)})">
+                <img src="${serie.poster}">
+                <div class="series-title">${serie.title}</div>
+            </div>
+        `;
+    });
+}
+
+loadGrid(seriesData);
+
+/* ===================== BUSCADOR ===================== */
+function searchSeries(){
+    const text = document.getElementById("searchBar").value.toLowerCase();
+    const filtered = seriesData.filter(s => s.title.toLowerCase().includes(text));
+    loadGrid(filtered);
+}
+
+/* ===================== PANEL INFO ===================== */
+function openSeries(i){
+    const box = seriesData[i];
+
+    let html = `
+        <button class="closeInfo" onclick="closeInfo()">✖</button>
+        <h2>${box.title}</h2>
+        <p>${box.description}</p>
+        <hr>
+    `;
+
+    box.seasons.forEach(season => {
+        html += `<div class="season-title">${season.name}</div>`;
+        season.episodes.forEach(ep => {
+            html += `
+                <button class="episode-btn" onclick="playEpisode('${ep.url}')">
+                    ▶ ${ep.title}
+                </button>
+            `;
+        });
+    });
+
+    document.getElementById("infoContent").innerHTML = html;
+    document.getElementById("seriesInfo").style.display = "block";
+}
+
+function closeInfo(){
+    document.getElementById("seriesInfo").style.display = "none";
+}
+
+/* ===================== REPRODUCTOR ===================== */
+function playEpisode(url){
+    document.getElementById("playerFrame").src = url;
+    document.getElementById("playerOverlay").style.display = "flex";
+}
+
+document.getElementById("closePlayer").addEventListener("click", ()=>{
+    document.getElementById("playerFrame").src = "";
+    document.getElementById("playerOverlay").style.display = "none";
+});
+</script>
+
+</body>
+</html>
